@@ -2,7 +2,7 @@
  * jQuery store - Plugin for persistent data storage using localStorage, userData (and window.name)
  * 
  * Authors: Rodney Rehm
- * Web: http://code.medialize.de/jQuery/store/
+ * Web: http://github.com/medialize/jQuery-store
  * 
  * Licensed under the MIT License:
  *   http://www.opensource.org/licenses/mit-license.php
