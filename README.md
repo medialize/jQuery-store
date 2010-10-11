@@ -6,7 +6,7 @@
 
 ## Usage ##
 
-```js
+<pre><code>
 //initialize
 $.storage = new $.store();
 
@@ -21,4 +21,4 @@ $.storage.del( key );
 
 // delete all values
 $.storage.flush();
-```
+</code></pre>
