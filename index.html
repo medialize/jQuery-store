@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+	<title>$.store jQuery plugin</title>
+	<meta name="title" content="windowSync() jQuery plugin" />
+	<meta name="description" content="Keeping data in multiple browser windows in sync." />
+
+	<script type="text/javascript" src="json2.js"></script>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+	<script type="text/javascript" src="jquery.store.js"></script>
+	<script type="text/javascript">
+		(function($,undefined){
+			
+			// initialize storage API
+			$.storage = new $.store();
+			
+			// build some demo interface
+			var $buttons;
+
+			var log = function( m )
+			{
+				$('<p>'+ m +'</p>').insertAfter( $buttons );
+			}
+
+			var poll = function()
+			{
+				log( $.storage.get( 'event' ) );
+			}
+
+			var push = function()
+			{
+				$.storage.set( 'event', new Date() );
+			}
+
+			$(function()
+			{
+				$buttons = $( '<div></div>' ).prependTo( $( document.body ) );
+
+				$( '<button type="button">start writing</button>' ).appendTo( $buttons ).bind( 'click', function()
+				{
+					window.setInterval( push, 500 );
+				});
+
+				$( '<button type="button">start reading</button>' ).appendTo( $buttons ).bind( 'click', function()
+				{
+					window.setInterval( poll, 1000 );
+				});	
+			});
+
+		})(jQuery);
+	</script>
+	<script type="text/javascript" src="jquery.windowSync.js"></script>
+</head>
+<body>
+
+	<script type="text/javascript">
+		document.write( '<p>Initialized $.storage with driver ' + $.storage.driver.ident + '</p>' );
+	</script>
+	
+	<h1>$.store</h1>
+	
+	<p>
+		<code>$.store</code> is a simple, yet easily extensible, plugin to persistently store data on the client side of things.
+		It uses <code>window.localStore</code> where available. Older Internet Explorers will use <code>userData</code>.
+		If all fails <code>$.store</code> will save your data to <code>window.name</code>.
+	</p>
+	
+	<p>
+		Note: The <code>windowName</code> will only do JSON serialization. <code>windowName</code> 
+		is not persistent in the sense of making it accross a closed browser window. If you need
+		that ability you should check <code>$.storage.driver.scope == "browser"</code>.
+	</p>
+	
+	<h2>Usage</h2>
+	
+<pre>//initialize
+$.storage = new $.store();
+
+// save a value
+$.storage.set( key, value );
+
+// read a value
+$.storage.get( key );
+
+// deletes a value
+$.storage.del( key );
+
+// delete all values
+$.storage.flush();</pre>
+	
+	<h2>Adding Serializers</h2>
+	
+	<p>
+		You can easily add your own serializers to the stack.
+		Make sure to add them before initializing the <code>$.store</code>.
+		Note: Serializers do not apply to the <code>windowName</code> storage driver.
+	</p>
+<pre>$.store.serializers.yaddayadda = {
+  ident: "$.store.serializers.yaddayadda",
+  init: function( encoders, decoders )
+  {
+    // register your serializer with en/decoder stack
+    encoders.unshift( "yaddayadda" );
+    decoders.push( "yaddayadda" );
+  },
+  
+  isYaddaYadda: function( value )
+  {
+    // determine if value should be processed by this serializer
+    return true;
+  },
+
+  encode: function( value )
+  {
+    // check if the value can be encoded
+    if( !value || value._serialized || !this.isYaddaYadda( value ) )
+      return value;
+
+    // prepare serialized-data-wrapper
+    var _value = { _serialized: this.ident, value: value };
+    
+    // work your magic
+    _value.value = "serializedVersionOf data";
+    
+    return value;
+  },
+  
+  decode: function( value )
+  {
+    // check if the value can be decoded
+    if( !value || !value._serialized || value._serialized != this.ident )
+      return value;
+
+    // work your magic
+    value.value = "unserializedVersionOf data";
+    
+    return this.isYaddaYadda( value.value ) ? value.value : undefined;
+  }
+};</pre>
+
+
+</body>
+</html>
