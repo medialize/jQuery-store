@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+	<title>$.store jQuery plugin</title>
+	<meta name="title" content="windowSync() jQuery plugin" />
+	<meta name="description" content="Keeping data in multiple browser windows in sync." />
+
+	<script type="text/javascript" src="json2.js"></script>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+	<script type="text/javascript" src="jquery.store.js"></script>
+	<script type="text/javascript">
+		(function($,undefined){
+			
+			// initialize storage API
+			$.storage = new $.store();
+			
+			// build some demo interface
+			var $buttons;
+
+			var log = function( m )
+			{
+				$('<p>'+ m +'</p>').insertAfter( $buttons );
+			}
+
+			var poll = function()
+			{
+				log( $.storage.get( 'event' ) );
+			}
+
+			var push = function()
+			{
+				$.storage.set( 'event', new Date() );
+			}
+
+			$(function()
+			{
+				$buttons = $( '<div></div>' ).prependTo( $( document.body ) );
+
+				$( '<button type="button">start writing</button>' ).appendTo( $buttons ).bind( 'click', function()
+				{
+					window.setInterval( push, 500 );
+				});
+
+				$( '<button type="button">start reading</button>' ).appendTo( $buttons ).bind( 'click', function()
+				{
+					window.setInterval( poll, 1000 );
+				});	
+			});
+
+		})(jQuery);
+	</script>
+	<script type="text/javascript" src="jquery.windowSync.js"></script>
+</head>
+<body>
+
+	<script type="text/javascript">
+		document.write( '<p>Initialized <code>$.storage</code> with driver <code>' + $.storage.driver.ident + '</code></p>' );
+	</script>
+	
+	<h1>how to test:</h1>
+	<p>
+		If you click on [start writing] the current time is written to <code>$.storage</code> (every 500ms).
+	</p>
+	
+	<p>
+		If you click on [start reading] the previously saved data is read from <code>$.storage</code> (every 1s).
+	</p>
+	
+	<p>
+		If you've let it write some data, reload the page and hit [start reading]. 
+		You'll see the last timestamp written to storage.
+	</p>
+</body>
+</html>
