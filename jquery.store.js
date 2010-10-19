@@ -68,12 +68,15 @@ $.store = function( driver, serializers )
 				return true; // continue;
 			
 			that.driver = this;
+			if( that.driver.init() === false )
+			{
+				that.driver = null;
+				return true; // continue;
+			}
+			
 			return false; // break;
 		});
 	}
-	
-	// initialize driver
-	this.driver.init();
 	
 	// use default serializers if not told otherwise
 	if( !serializers )
@@ -127,8 +130,11 @@ $.extend( $.store.prototype, {
 			var serializer = that.serializers[ this + "" ];
 			if( !serializer || !serializer.encode )
 				return true; // continue;
-
-			value = serializer.encode( value );
+			try
+			{
+				value = serializer.encode( value );
+			}
+			catch( e ){}
 		});
 
 		return value;
@@ -218,13 +224,20 @@ $.store.drivers = {
 			// $.store can only utilize one userData store at a time, thus avoid duplicate initialization
 			if( this.initialized )
 				return;
-				
-			// Create a non-existing element and append it to the root element (html)
-			this.element = document.createElement( this.nodeName );
-			document.documentElement.appendChild( this.element );
-			// Apply userData behavior
-			this.element.addBehavior( "#default#userData" );
-			this.initialized = true;
+			
+			try
+			{
+				// Create a non-existing element and append it to the root element (html)
+				this.element = document.createElement( this.nodeName );
+				document.documentElement.insertBefore( this.element, document.getElementsByTagName('title')[0] );
+				// Apply userData behavior
+				this.element.addBehavior( "#default#userData" );
+				this.initialized = true;
+			}
+			catch( e )
+			{
+				return false; 
+			}
 		},
 		get: function( key )
 		{
@@ -407,6 +420,5 @@ $.store.serializers = {
 		}
 	}
 };
-
 
 })(jQuery);
