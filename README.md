@@ -22,3 +22,7 @@ $.storage.del( key );
 // delete all values
 $.storage.flush();
 </code></pre>
+
+## License ##
+
+$.store is published under the [MIT license](http://www.opensource.org/licenses/mit-license.php).
