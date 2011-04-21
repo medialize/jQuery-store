@@ -136,7 +136,7 @@ $.extend( $.store.prototype, {
 			}
 			catch( e ){}
 		});
-
+		
 		return value;
 	},
 	unserialize: function( value )
@@ -150,10 +150,10 @@ $.extend( $.store.prototype, {
 			var serializer = that.serializers[ this + "" ];
 			if( !serializer || !serializer.decode )
 				return true; // continue;
-
+			
 			value = serializer.decode( value );
 		});
-
+		
 		return value;
 	}
 });
@@ -358,13 +358,13 @@ $.store.serializers = {
 			var documentElement = ( value ? value.ownerDocument || value : 0 ).documentElement;
 			return documentElement ? documentElement.nodeName.toLowerCase() !== "html" : false;
 		},
-
+		
 		// encodes a XML node to string (taken from $.jStorage, MIT License)
 		encode: function( value )
 		{
 			if( !value || value._serialized || !this.isXML( value ) )
 				return value;
-
+			
 			var _value = { _serialized: this.ident, value: value };
 			
 			try
@@ -392,7 +392,7 @@ $.store.serializers = {
 		{
 			if( !value || !value._serialized || value._serialized != this.ident )
 				return value;
-
+			
 			var dom_parser = ( "DOMParser" in window && (new DOMParser()).parseFromString );
 			if( !dom_parser && window.ActiveXObject )
 			{
@@ -404,7 +404,7 @@ $.store.serializers = {
 					return xml_doc;
 				}
 			}
-
+			
 			if( !dom_parser )
 			{
 				return undefined;
