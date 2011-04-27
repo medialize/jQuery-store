@@ -266,7 +266,7 @@ $.store.drivers = {
 	
 	// cookie storage, using the jQuery Cookie plugin
 	'cookie': {
-		indent: "$.store.drivers.cookie",
+		ident: "$.store.drivers.cookie",
 		scope: 'browser',
 		cache: {},
 		key: "storage",
