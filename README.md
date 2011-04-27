@@ -1,4 +1,4 @@
-# `$.store` jQuery plugin #
+# $.store jQuery plugin #
 
 `$.store` is a simple, yet easily extensible, plugin to persistently store data on the client side of things. It uses `window.localStore` where available. Older Internet Explorers will use `userData`. If all fails `$.store` will save your data to `window.name`.
 
