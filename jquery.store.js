@@ -88,7 +88,7 @@ $.store = function( driver, serializers )
 	{
 		// skip invalid processors
 		if( !$.isFunction( this.init ) )
-			return true; // continue;
+			return; // continue;
 		
 		that.serializers[ key ] = this;
 		that.serializers[ key ].init( that.encoders, that.decoders );
@@ -129,7 +129,7 @@ $.extend( $.store.prototype, {
 		{
 			var serializer = that.serializers[ this + "" ];
 			if( !serializer || !serializer.encode )
-				return true; // continue;
+				return; // continue;
 			try
 			{
 				value = serializer.encode( value );
@@ -149,7 +149,7 @@ $.extend( $.store.prototype, {
 		{
 			var serializer = that.serializers[ this + "" ];
 			if( !serializer || !serializer.decode )
-				return true; // continue;
+				return; // continue;
 			
 			value = serializer.decode( value );
 		});
@@ -223,7 +223,7 @@ $.store.drivers = {
 		{
 			// $.store can only utilize one userData store at a time, thus avoid duplicate initialization
 			if( this.initialized )
-				return;
+				return false;
 			
 			try
 			{
@@ -233,10 +233,11 @@ $.store.drivers = {
 				// Apply userData behavior
 				this.element.addBehavior( "#default#userData" );
 				this.initialized = true;
+				return true;
 			}
 			catch( e )
 			{
-				return false; 
+				return false;
 			}
 		},
 		get: function( key )
