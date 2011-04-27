@@ -264,6 +264,72 @@ $.store.drivers = {
 		}
 	},
 	
+	// cookie storage, using the jQuery Cookie plugin
+	'cookie': {
+		indent: "$.store.drivers.cookie",
+		scope: 'browser',
+		cache: {},
+		key: "storage",
+		options: {
+			expires: 365,
+			path: '/'
+		},
+		encodes: true,
+		available: function()
+		{
+			return (typeof $.cookie == "function");
+		},
+		init: function()
+		{
+			try
+			{
+				var jsonData = $.cookie(this.key);
+				if (jsonData == null) {
+					this.cache = {};
+				} else {
+					this.cache = $.store.serializers.json.decode( jsonData );
+					if( typeof this.cache != "object" ) {
+						this.cache = {};
+					}
+				}
+			}
+			catch(e)
+			{
+				this.cache = {};
+				$.cookie(this.key, "{}", this.options);
+			}
+		},
+		save: function()
+		{
+			$.cookie(this.key, $.store.serializers.json.encode( this.cache ), this.options);
+		},
+		get: function( key )
+		{
+			return this.cache[ key ];
+		},
+		set: function( key, value )
+		{
+			this.cache[ key ] = value;
+			this.save();
+		},
+		del: function( key )
+		{
+			try
+			{
+				delete this.cache[ key ];
+			}
+			catch(e)
+			{
+				this.cache[ key ] = undefined;
+			}
+			this.save();
+		},
+		flush: function()
+		{
+			$.cookie(this.key, null, this.options);
+		}
+	},
+	
 	// most other browsers
 	'windowName': {
 		ident: "$.store.drivers.windowName",
