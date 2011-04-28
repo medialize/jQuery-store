@@ -8,20 +8,20 @@ The optional `cookie` driver requires the [`$.cookie`][jquery-cookie] plugin.
 
 ## Usage ##
 
-    //initialize
-    $.storage = new $.store();
-    
-    // save a value
-    $.storage.set( key, value );
-    
-    // read a value
-    $.storage.get( key );
-    
-    // deletes a value
-    $.storage.del( key );
-    
-    // delete all values
-    $.storage.flush();
+	//initialize
+	$.storage = new $.store();
+	
+	// save a value
+	$.storage.set( key, value );
+	
+	// read a value
+	$.storage.get( key );
+	
+	// deletes a value
+	$.storage.del( key );
+	
+	// delete all values
+	$.storage.flush();
 
 ## License ##
 
