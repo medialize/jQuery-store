@@ -23,6 +23,55 @@ The optional `cookie` driver requires the [`$.cookie`][jquery-cookie] plugin.
 	// delete all values
 	$.storage.flush();
 
+## Adding Serializers ##
+
+You can easily add your own serializers to the stack. Make sure to add them before initializing the `$.store`.
+
+*Note:* Serializers do not apply to the `windowName` storage driver.
+
+	$.store.serializers.yaddayadda = {
+		ident: "$.store.serializers.yaddayadda",
+		init: function( encoders, decoders )
+		{
+			// register your serializer with en/decoder stack
+			encoders.unshift( "yaddayadda" );
+			decoders.push( "yaddayadda" );
+		},
+		
+		isYaddaYadda: function( value )
+		{
+			// determine if value should be processed by this serializer
+			return true;
+		},
+		
+		encode: function( value )
+		{
+			// check if the value can be encoded
+			if( !value || value._serialized || !this.isYaddaYadda( value ) )
+				return value;
+			
+			// prepare serialized-data-wrapper
+			var _value = { _serialized: this.ident, value: value };
+			
+			// work your magic
+			_value.value = "serializedVersionOf data";
+			
+			return value;
+		},
+		
+		decode: function( value )
+		{
+			// check if the value can be decoded
+			if( !value || !value._serialized || value._serialized != this.ident )
+				return value;
+			
+			// work your magic
+			value.value = "unserializedVersionOf data";
+			
+			return this.isYaddaYadda( value.value ) ? value.value : undefined;
+		}
+	};
+
 ## License ##
 
 `$.store` is published under the [MIT license][].
