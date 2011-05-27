@@ -60,23 +60,17 @@
 		document.write( '<p>Initialized $.storage with driver ' + $.storage.driver.ident + '</p>' );
 	</script>
 	
-	<h1>$.store</h1>
-	
-	<p>
-		<code>$.store</code> is a simple, yet easily extensible, plugin to persistently store data on the client side of things.
-		It uses <code>window.localStore</code> where available. Older Internet Explorers will use <code>userData</code>.
-		If all fails <code>$.store</code> will save your data to <code>window.name</code>.
-	</p>
-	
-	<p>
-		Note: The <code>windowName</code> will only do JSON serialization. <code>windowName</code> 
-		is not persistent in the sense of making it accross a closed browser window. If you need
-		that ability you should check <code>$.storage.driver.scope == "browser"</code>.
-	</p>
-	
-	<h2>Usage</h2>
-	
-<pre>//initialize
+<h1>$.store jQuery plugin</h1>
+
+<p><code>$.store</code> is a simple, yet easily extensible, plugin to persistently store data on the client side of things. It uses <code>window.localStore</code> where available. Older Internet Explorers will use <code>userData</code>. If all fails <code>$.store</code> will save your data to <code>window.name</code>.</p>
+
+<p>The optional <code>cookie</code> driver requires the <a href="https://github.com/carhartl/jquery-cookie"><code>$.cookie</code></a> plugin.</p>
+
+<p><em>Note</em>: The <code>windowName</code> driver will only do JSON serialization. <code>windowName</code> is not persistent in the sense of making it across a closed browser window. If you need that ability you should check <code>$.storage.driver.scope == "browser"</code>.</p>
+
+<h2>Usage</h2>
+
+<pre><code>//initialize
 $.storage = new $.store();
 
 // save a value
@@ -89,16 +83,16 @@ $.storage.get( key );
 $.storage.del( key );
 
 // delete all values
-$.storage.flush();</pre>
-	
-	<h2>Adding Serializers</h2>
-	
-	<p>
-		You can easily add your own serializers to the stack.
-		Make sure to add them before initializing the <code>$.store</code>.
-		Note: Serializers do not apply to the <code>windowName</code> storage driver.
-	</p>
-<pre>$.store.serializers.yaddayadda = {
+$.storage.flush();
+</code></pre>
+
+<h2>Adding Serializers</h2>
+
+<p>You can easily add your own serializers to the stack. Make sure to add them before initializing the <code>$.store</code>.</p>
+
+<p><em>Note:</em> Serializers do not apply to the <code>windowName</code> storage driver.</p>
+
+<pre><code>$.store.serializers.yaddayadda = {
   ident: "$.store.serializers.yaddayadda",
   init: function( encoders, decoders )
   {
@@ -139,8 +133,12 @@ $.storage.flush();</pre>
     
     return this.isYaddaYadda( value.value ) ? value.value : undefined;
   }
-};</pre>
+};
+</code></pre>
 
+<h2>License</h2>
+
+<p><code>$.store</code> is published under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.</p>
 
 </body>
 </html>
