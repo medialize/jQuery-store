@@ -24,7 +24,7 @@
  *	$.storage.get( key );			// retrieves a value
  *	$.storage.set( key, value );	// saves a value
  *	$.storage.del( key );			// deletes a value
- *	$.storage.flush();				// deletes aall values
+ *	$.storage.flush();				// deletes all values
  **********************************************************************************
  */
 
@@ -88,7 +88,7 @@ $.store = function( driver, serializers )
 	{
 		// skip invalid processors
 		if( !$.isFunction( this.init ) )
-			return true; // continue;
+			return; // continue;
 		
 		that.serializers[ key ] = this;
 		that.serializers[ key ].init( that.encoders, that.decoders );
@@ -129,7 +129,7 @@ $.extend( $.store.prototype, {
 		{
 			var serializer = that.serializers[ this + "" ];
 			if( !serializer || !serializer.encode )
-				return true; // continue;
+				return; // continue;
 			try
 			{
 				value = serializer.encode( value );
@@ -149,8 +149,8 @@ $.extend( $.store.prototype, {
 		{
 			var serializer = that.serializers[ this + "" ];
 			if( !serializer || !serializer.decode )
-				return true; // continue;
-
+				return; // continue;
+			
 			value = serializer.decode( value );
 		});
 
@@ -172,8 +172,8 @@ $.store.drivers = {
 		available: function()
 		{
 			try
-			{
-				return !!window.localStorage;
+			{	// localStorage support test, the Modernizr way
+				return !!localStorage.getItem;
 			}
 			catch(e)
 			{
