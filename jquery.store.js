@@ -16,7 +16,7 @@
  *	$.storage = new $.store();
  *	// optionally initialize with specific driver and or serializers
  *	$.storage = new $.store( [driver] [, serializers] );
- *		driver		can be the key (e.g. "windowName") or the driver-object itself
+ *		driver		can be a scope ("browser" or "window"), a key (e.g. "windowName") or the driver-object itself
  *		serializers	can be a list of named serializers like $.store.serializers
  **********************************************************************************
  * USAGE EXAMPLES:
@@ -39,8 +39,20 @@ $.store = function( driver, serializers )
 	var that = this;
 	
 	if( typeof driver == 'string' )
-	{
-		if( $.store.drivers[ driver ] )
+	{   
+        if ( driver == 'browser' ) {
+            // get the best browser scoped storage
+            this.driver = $.store.drivers[ 'localStorage' ];
+            if( !$.isFunction( this.driver.available ) || !this.driver.available() )
+                this.driver = $.store.drivers[ 'userData' ];
+            if( !$.isFunction( this.driver.available ) || !this.driver.available() )
+                this.driver = $.store.drivers[ 'windowName' ]; //extreme fallback
+        } else if (driver == 'window' ) {
+            // get the best browser scoped storage
+            this.driver = $.store.drivers[ 'sessionStorage' ];
+            if( !$.isFunction( this.driver.available ) || !this.driver.available() )
+                this.driver = $.store.drivers[ 'windowName' ];
+		} else if( $.store.drivers[ driver ] )
 			this.driver = $.store.drivers[ driver ];
 		else
 			throw new Error( 'Unknown driver '+ driver );
