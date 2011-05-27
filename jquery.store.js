@@ -197,6 +197,49 @@ $.store.drivers = {
 		flush: function()
 		{
 			window.localStorage.clear();
+		} 
+	},
+	
+	// Firefox 3.5, Safari 4.0, Chrome 5, Opera 10.5, IE8
+	'sessionStorage': {
+		// see https://developer.mozilla.org/en/dom/storage#sessionStorage
+		ident: "$.store.drivers.sessionStorage",
+		scope: 'window',
+		available: function()
+		{
+			try
+			{   // sessionStorage support test, the Modernizr way
+                return !!sessionStorage.getItem;
+			}
+			catch(e)
+			{
+				// Firefox won't allow sessionStorage if DOM Storage disabled
+				return false;
+			}
+		},
+		init: $.noop,
+		get: function( key )
+		{
+			return window.sessionStorage.getItem( key );
+		},
+		set: function( key, value )
+		{
+			window.sessionStorage.setItem( key, value );
+		},
+		del: function( key )
+		{
+			window.sessionStorage.removeItem( key );
+		},
+		flush: function()
+		{   
+            try {
+			    window.sessionStorage.clear();
+            } catch(e) {
+                // older (3.x) FF does not allow this on sessionStorage
+                for (var r = 0; r < window.sessionStorage.length; r++) {
+                    window.sessionStorage.removeItem( window.sessionStorage.key(r) );
+                }
+            }
 		}
 	},
 	
@@ -229,10 +272,12 @@ $.store.drivers = {
 			{
 				// Create a non-existing element and append it to the root element (html)
 				this.element = document.createElement( this.nodeName );
-				document.documentElement.insertBefore( this.element, document.getElementsByTagName('title')[0] );
+				var headElement = document.getElementsByTagName('head')[0];
+				headElement.insertBefore( this.element, document.getElementsByTagName('title')[0] );
 				// Apply userData behavior
 				this.element.addBehavior( "#default#userData" );
 				this.initialized = true;
+				return;
 			}
 			catch( e )
 			{
