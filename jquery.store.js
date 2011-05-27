@@ -25,7 +25,9 @@
  *	$.storage.set( key, value );	// saves a value
  *	$.storage.del( key );			// deletes a value
  *	$.storage.flush();				// deletes all values
- **********************************************************************************
+ *	$.storage.length();				// the number of key-value pairs in storage
+ *	$.storage.key( index );		    // returns a key for the given index (order is not guranteed, so just use it for looping on the set)
+**********************************************************************************
  */
 
 (function($,undefined){
@@ -130,6 +132,14 @@ $.extend( $.store.prototype, {
 	{
 		this.driver.flush();
 	},
+    length: function()
+    {
+        return this.driver.length();
+    },
+    key: function( index )
+    {
+        return this.driver.key( index );
+    },
 	driver : undefined,
 	encoders : [],
 	decoders : [],
@@ -209,6 +219,15 @@ $.store.drivers = {
 		flush: function()
 		{
 			window.localStorage.clear();
+		},
+        length: function()
+		{
+			return window.localStorage.length
+        },
+        key: function( index )
+        {
+            return (index >= 0 && index < window.localStorage.length) ?
+                window.localStorage.key(index) : null;
 		} 
 	},
 	
@@ -252,6 +271,15 @@ $.store.drivers = {
                     window.sessionStorage.removeItem( window.sessionStorage.key(r) );
                 }
             }
+		},
+        length: function()
+		{
+			return window.sessionStorage.length
+        },
+        key: function( index )
+        {
+            return (index >= 0 && index < window.sessionStorage.length) ?
+                window.sessionStorage.key(index) : null;
 		}
 	},
 	
@@ -263,6 +291,7 @@ $.store.drivers = {
 		nodeName: 'userdatadriver',
 		scope: 'browser',
 		initialized: false,
+        keys: [],
 		available: function()
 		{
 			try
@@ -305,18 +334,38 @@ $.store.drivers = {
 		{
 			this.element.setAttribute( key, value );
 			this.element.save( this.nodeName );
+            this.keys[ this.keys.length ] = key;
 		},
 		del: function( key )
 		{
 			this.element.removeAttribute( key );
 			this.element.save( this.nodeName );
-			
+            var i = this.keys.indexOf( key ); 
+            if (i != -1) this.keys.splice(i, 1); 
 		},
 		flush: function()
 		{
 			// flush by expiration
 			this.element.expires = (new Date).toUTCString();
 			this.element.save( this.nodeName );
+            this.keys = [];
+		},
+        length: function()
+		{
+			return this.keys.length
+        },
+        key: function( index )
+        {
+            if (index >= 0 && index < this.keys.length) {
+                var i = 0;
+                for (var arrayIndex in this.keys) {
+                    if (index == i++) 
+                        return arrayIndex;
+                }
+                return null;
+            } else {
+                return null;
+            }
 		}
 	},
 	
@@ -377,6 +426,22 @@ $.store.drivers = {
 		flush: function()
 		{
 			window.name = "{}";
+		},
+        length: function()
+		{
+			return this.cache.length
+        },
+        key: function( index )
+        {
+            if (index >= 0 && index < this.cache.length) {
+                var i = 0;
+                for (var arrayIndex in this.cache) {
+                    if (index == i++) return arrayIndex;
+                }
+                return null;
+            } else {
+                return null;
+            }
 		}
 	}
 };
