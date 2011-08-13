@@ -16,7 +16,7 @@
  *	$.storage = new $.store();
  *	// optionally initialize with specific driver and or serializers
  *	$.storage = new $.store( [driver] [, serializers] );
- *		driver		can be the key (e.g. "windowName") or the driver-object itself
+ *		driver		can be a scope ("browser" or "window"), a key (e.g. "windowName") or the driver-object itself
  *		serializers	can be a list of named serializers like $.store.serializers
  **********************************************************************************
  * USAGE EXAMPLES:
@@ -24,8 +24,10 @@
  *	$.storage.get( key );			// retrieves a value
  *	$.storage.set( key, value );	// saves a value
  *	$.storage.del( key );			// deletes a value
- *	$.storage.flush();				// deletes aall values
- **********************************************************************************
+ *	$.storage.flush();				// deletes all values
+ *	$.storage.length();				// the number of key-value pairs in storage
+ *	$.storage.key( index );		    // returns a key for the given index (order is not guranteed, so just use it for looping on the set)
+**********************************************************************************
  */
 
 (function($,undefined){
@@ -39,8 +41,20 @@ $.store = function( driver, serializers )
 	var that = this;
 	
 	if( typeof driver == 'string' )
-	{
-		if( $.store.drivers[ driver ] )
+	{   
+        if ( driver == 'browser' ) {
+            // get the best browser scoped storage
+            this.driver = $.store.drivers[ 'localStorage' ];
+            if( !$.isFunction( this.driver.available ) || !this.driver.available() )
+                this.driver = $.store.drivers[ 'userData' ];
+            if( !$.isFunction( this.driver.available ) || !this.driver.available() )
+                this.driver = $.store.drivers[ 'windowName' ]; //extreme fallback
+        } else if (driver == 'window' ) {
+            // get the best browser scoped storage
+            this.driver = $.store.drivers[ 'sessionStorage' ];
+            if( !$.isFunction( this.driver.available ) || !this.driver.available() )
+                this.driver = $.store.drivers[ 'windowName' ];
+		} else if( $.store.drivers[ driver ] )
 			this.driver = $.store.drivers[ driver ];
 		else
 			throw new Error( 'Unknown driver '+ driver );
@@ -88,7 +102,7 @@ $.store = function( driver, serializers )
 	{
 		// skip invalid processors
 		if( !$.isFunction( this.init ) )
-			return true; // continue;
+			return; // continue;
 		
 		that.serializers[ key ] = this;
 		that.serializers[ key ].init( that.encoders, that.decoders );
@@ -118,6 +132,14 @@ $.extend( $.store.prototype, {
 	{
 		this.driver.flush();
 	},
+    length: function()
+    {
+        return this.driver.length();
+    },
+    key: function( index )
+    {
+        return this.driver.key( index );
+    },
 	driver : undefined,
 	encoders : [],
 	decoders : [],
@@ -129,7 +151,7 @@ $.extend( $.store.prototype, {
 		{
 			var serializer = that.serializers[ this + "" ];
 			if( !serializer || !serializer.encode )
-				return true; // continue;
+				return; // continue;
 			try
 			{
 				value = serializer.encode( value );
@@ -149,8 +171,8 @@ $.extend( $.store.prototype, {
 		{
 			var serializer = that.serializers[ this + "" ];
 			if( !serializer || !serializer.decode )
-				return true; // continue;
-
+				return; // continue;
+			
 			value = serializer.decode( value );
 		});
 
@@ -172,8 +194,8 @@ $.store.drivers = {
 		available: function()
 		{
 			try
-			{
-				return !!window.localStorage;
+			{	// localStorage support test, the Modernizr way
+				return !!localStorage.getItem;
 			}
 			catch(e)
 			{
@@ -197,6 +219,67 @@ $.store.drivers = {
 		flush: function()
 		{
 			window.localStorage.clear();
+		},
+        length: function()
+		{
+			return window.localStorage.length
+        },
+        key: function( index )
+        {
+            return (index >= 0 && index < window.localStorage.length) ?
+                window.localStorage.key(index) : null;
+		} 
+	},
+	
+	// Firefox 3.5, Safari 4.0, Chrome 5, Opera 10.5, IE8
+	'sessionStorage': {
+		// see https://developer.mozilla.org/en/dom/storage#sessionStorage
+		ident: "$.store.drivers.sessionStorage",
+		scope: 'window',
+		available: function()
+		{
+			try
+			{   // sessionStorage support test, the Modernizr way
+                return !!sessionStorage.getItem;
+			}
+			catch(e)
+			{
+				// Firefox won't allow sessionStorage if DOM Storage disabled
+				return false;
+			}
+		},
+		init: $.noop,
+		get: function( key )
+		{
+			return window.sessionStorage.getItem( key );
+		},
+		set: function( key, value )
+		{
+			window.sessionStorage.setItem( key, value );
+		},
+		del: function( key )
+		{
+			window.sessionStorage.removeItem( key );
+		},
+		flush: function()
+		{   
+            try {
+			    window.sessionStorage.clear();
+            } catch(e) {
+                // older (3.x) FF does not allow this on sessionStorage
+                for (var r = 0; r < window.sessionStorage.length; r++) {
+                    window.sessionStorage.removeItem( window.sessionStorage.key(r) );
+                }
+            }
+		},
+        length: function()
+		{
+			return window.sessionStorage.length
+        },
+        key: function( index )
+        {
+            return (index >= 0 && index < window.sessionStorage.length) ?
+                window.sessionStorage.key(index) : null;
 		}
 	},
 	
@@ -208,6 +291,7 @@ $.store.drivers = {
 		nodeName: 'userdatadriver',
 		scope: 'browser',
 		initialized: false,
+        keys: [],
 		available: function()
 		{
 			try
@@ -229,10 +313,12 @@ $.store.drivers = {
 			{
 				// Create a non-existing element and append it to the root element (html)
 				this.element = document.createElement( this.nodeName );
-				document.documentElement.insertBefore( this.element, document.getElementsByTagName('title')[0] );
+				var headElement = document.getElementsByTagName('head')[0];
+				headElement.insertBefore( this.element, document.getElementsByTagName('title')[0] );
 				// Apply userData behavior
 				this.element.addBehavior( "#default#userData" );
 				this.initialized = true;
+				return;
 			}
 			catch( e )
 			{
@@ -248,18 +334,38 @@ $.store.drivers = {
 		{
 			this.element.setAttribute( key, value );
 			this.element.save( this.nodeName );
+            this.keys[ this.keys.length ] = key;
 		},
 		del: function( key )
 		{
 			this.element.removeAttribute( key );
 			this.element.save( this.nodeName );
-			
+            var i = this.keys.indexOf( key ); 
+            if (i != -1) this.keys.splice(i, 1); 
 		},
 		flush: function()
 		{
 			// flush by expiration
 			this.element.expires = (new Date).toUTCString();
 			this.element.save( this.nodeName );
+            this.keys = [];
+		},
+        length: function()
+		{
+			return this.keys.length
+        },
+        key: function( index )
+        {
+            if (index >= 0 && index < this.keys.length) {
+                var i = 0;
+                for (var arrayIndex in this.keys) {
+                    if (index == i++) 
+                        return arrayIndex;
+                }
+                return null;
+            } else {
+                return null;
+            }
 		}
 	},
 	
@@ -320,6 +426,22 @@ $.store.drivers = {
 		flush: function()
 		{
 			window.name = "{}";
+		},
+        length: function()
+		{
+			return this.cache.length
+        },
+        key: function( index )
+        {
+            if (index >= 0 && index < this.cache.length) {
+                var i = 0;
+                for (var arrayIndex in this.cache) {
+                    if (index == i++) return arrayIndex;
+                }
+                return null;
+            } else {
+                return null;
+            }
 		}
 	}
 };
