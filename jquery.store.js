@@ -88,7 +88,7 @@ $.store = function( driver, serializers )
 	{
 		// skip invalid processors
 		if( !$.isFunction( this.init ) )
-			return true; // continue;
+			return; // continue;
 		
 		that.serializers[ key ] = this;
 		that.serializers[ key ].init( that.encoders, that.decoders );
@@ -129,14 +129,14 @@ $.extend( $.store.prototype, {
 		{
 			var serializer = that.serializers[ this + "" ];
 			if( !serializer || !serializer.encode )
-				return true; // continue;
+				return; // continue;
 			try
 			{
 				value = serializer.encode( value );
 			}
 			catch( e ){}
 		});
-
+		
 		return value;
 	},
 	unserialize: function( value )
@@ -149,11 +149,11 @@ $.extend( $.store.prototype, {
 		{
 			var serializer = that.serializers[ this + "" ];
 			if( !serializer || !serializer.decode )
-				return true; // continue;
-
+				return; // continue;
+			
 			value = serializer.decode( value );
 		});
-
+		
 		return value;
 	}
 });
@@ -223,7 +223,7 @@ $.store.drivers = {
 		{
 			// $.store can only utilize one userData store at a time, thus avoid duplicate initialization
 			if( this.initialized )
-				return;
+				return false;
 			
 			try
 			{
@@ -233,10 +233,11 @@ $.store.drivers = {
 				// Apply userData behavior
 				this.element.addBehavior( "#default#userData" );
 				this.initialized = true;
+				return true;
 			}
 			catch( e )
 			{
-				return false; 
+				return false;
 			}
 		},
 		get: function( key )
@@ -260,6 +261,72 @@ $.store.drivers = {
 			// flush by expiration
 			this.element.expires = (new Date).toUTCString();
 			this.element.save( this.nodeName );
+		}
+	},
+	
+	// cookie storage, using the jQuery Cookie plugin
+	'cookie': {
+		ident: "$.store.drivers.cookie",
+		scope: 'browser',
+		cache: {},
+		key: "storage",
+		options: {
+			expires: 365,
+			path: '/'
+		},
+		encodes: true,
+		available: function()
+		{
+			return (typeof $.cookie == "function");
+		},
+		init: function()
+		{
+			try
+			{
+				var jsonData = $.cookie(this.key);
+				if (jsonData == null) {
+					this.cache = {};
+				} else {
+					this.cache = $.store.serializers.json.decode( jsonData );
+					if( typeof this.cache != "object" ) {
+						this.cache = {};
+					}
+				}
+			}
+			catch(e)
+			{
+				this.cache = {};
+				$.cookie(this.key, "{}", this.options);
+			}
+		},
+		save: function()
+		{
+			$.cookie(this.key, $.store.serializers.json.encode( this.cache ), this.options);
+		},
+		get: function( key )
+		{
+			return this.cache[ key ];
+		},
+		set: function( key, value )
+		{
+			this.cache[ key ] = value;
+			this.save();
+		},
+		del: function( key )
+		{
+			try
+			{
+				delete this.cache[ key ];
+			}
+			catch(e)
+			{
+				this.cache[ key ] = undefined;
+			}
+			this.save();
+		},
+		flush: function()
+		{
+			$.cookie(this.key, null, this.options);
 		}
 	},
 	
@@ -358,13 +425,13 @@ $.store.serializers = {
 			var documentElement = ( value ? value.ownerDocument || value : 0 ).documentElement;
 			return documentElement ? documentElement.nodeName.toLowerCase() !== "html" : false;
 		},
-
+		
 		// encodes a XML node to string (taken from $.jStorage, MIT License)
 		encode: function( value )
 		{
 			if( !value || value._serialized || !this.isXML( value ) )
 				return value;
-
+			
 			var _value = { _serialized: this.ident, value: value };
 			
 			try
@@ -392,7 +459,7 @@ $.store.serializers = {
 		{
 			if( !value || !value._serialized || value._serialized != this.ident )
 				return value;
-
+			
 			var dom_parser = ( "DOMParser" in window && (new DOMParser()).parseFromString );
 			if( !dom_parser && window.ActiveXObject )
 			{
@@ -404,7 +471,7 @@ $.store.serializers = {
 					return xml_doc;
 				}
 			}
-
+			
 			if( !dom_parser )
 			{
 				return undefined;
