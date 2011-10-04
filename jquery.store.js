@@ -259,8 +259,11 @@ $.store.drivers = {
 		flush: function()
 		{
 			// flush by expiration
-			this.element.expires = (new Date).toUTCString();
-			this.element.save( this.nodeName );
+			var attrs = this.element.xmlDocument.firstChild.attributes;
+			for (var i = attrs.length - 1; i >= 0; i--) {
+				this.element.removeAttribute( attrs[i].nodeName );
+			}
+        		this.element.save( this.nodeName );
 		}
 	},
 	
