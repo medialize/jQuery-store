@@ -173,11 +173,17 @@ $.store.drivers = {
 		{
 			try
 			{
-				return !!window.localStorage;
+				// Firefox won't allow localStorage if cookies are disabled
+				if (!!window.localStorage) {
+					// Safari's "Private" mode throws a QUOTA_EXCEEDED_ERR on setItem
+					window.localStorage.setItem("jQuery Store Availability test", true);
+					window.localStorage.removeItem("jQuery Store Availability test");
+					return true;
+				};
+				return false;
 			}
 			catch(e)
 			{
-				// Firefox won't allow localStorage if cookies are disabled
 				return false;
 			}
 		},
