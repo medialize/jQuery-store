@@ -1,0 +1,39 @@
+{
+    "name": "jQuery store",
+    "version": "1.0.0",
+    "title": "jQuery.store()",
+    "author": {
+        "name": "Rodney Rehm",
+        "url": "http://rodneyrehm.de"
+    },
+    "licenses": [
+        {
+            "type": "MIT",
+            "url": "http://www.opensource.org/licenses/mit-license"
+        },
+        {
+            "type": "GPL",
+            "url": "http://opensource.org/licenses/GPL-3.0"
+        }
+    ],
+    "dependencies": {
+        "jquery": ">=1.4.2"
+    },
+    "description": "Simple (yet easily extensible) plugin to persistently store data on the client side of things. Allows callbacks to handle un/serialisation of specific objects (like a Date).",
+    "keywords": [
+        "json",
+        "storage",
+        "persistent storage",
+        "localStorage",
+        "local storage",
+        "userBehavior",
+        "userData storage",
+        "window.name",
+        "window.name storage"
+    ],
+    "homepage": "http://medialize.github.com/jQuery-store/",
+    "files": [
+        "jquery.store.js"
+        "json2.js"
+    ]
+}
