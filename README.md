@@ -25,4 +25,4 @@ $.storage.flush();
 
 ## License ##
 
-$.store is published under the [MIT license](http://www.opensource.org/licenses/mit-license.php).
+$.store is published under the [MIT license](http://www.opensource.org/licenses/mit-license) and [GPL v3](http://opensource.org/licenses/GPL-3.0).
