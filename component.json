@@ -5,5 +5,9 @@
   "repository": {
     "type": "git",
     "url": "git://github.com/medialize/jQuery-store.git"
+  },
+  "dependencies": {
+    "jquery" : "*",
+    "json2" : "*"
   }
 }
