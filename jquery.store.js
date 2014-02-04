@@ -85,6 +85,8 @@ $.store = function( driver, serializers )
 	
 	// intialize serializers
 	this.serializers = {};
+	this.encoders = [];
+	this.decoders = [];
 	$.each( serializers, function( key, serializer )
 	{
 		// skip invalid processors
